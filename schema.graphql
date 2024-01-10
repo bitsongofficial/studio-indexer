@@ -1,0 +1,82 @@
+# To improve query performance, we strongly suggest adding indexes to any field that you plan to filter or sort by
+# Add the `@index` or `@index(unique: true)` annotation after any non-key field
+# https://academy.subquery.network/build/graphql.html#indexing-by-non-primary-key-field
+
+# type Block @entity {
+#   id: ID! # The block hash
+#   height: BigInt!
+# }
+
+# type Transaction @entity {
+#   id: ID!
+#   blockHeight: BigInt!
+#   timestamp: String!
+# }
+
+# type ExecuteEvent @entity {
+#   id: ID!
+#   blockHeight: BigInt!
+#   txHash: String!
+#   contractAddress: String!
+# }
+
+# type Message @entity {
+#   id: ID!
+#   blockHeight: BigInt!
+#   txHash: String!
+#   sender: String!
+#   contract: String!
+# }
+
+type Nft @entity {
+  id: ID!
+  blockHeight: BigInt!
+  txHash: String!
+  symbol: String!
+  name: String!
+  image: String
+  animationUrl: String
+  uri: String
+  paymentDenom: String
+  paymentAddress: String
+  maxPerAddress: BigInt
+  sellerFeeBps: BigInt
+  referralFeeBps: BigInt
+  startTime: Date
+  saleType: String
+  marketplaceAddress: String! @index
+  ratio: BigInt
+  sender: String!
+  timestamp: Date!
+}
+
+type NftToken @entity {
+  id: ID!
+  blockHeight: BigInt!
+  txHash: String!
+  nftId: String! @index
+  tokenId: String! @index
+  owner: String! @index
+  image: String
+  animationUrl: String
+  uri: String
+  timestamp: Date!
+}
+
+type NftActivity @entity {
+  id: ID!
+  blockHeight: BigInt!
+  txHash: String!
+  nftId: String! @index
+  tokenId: String! @index
+  side: String! @index
+  referral: String
+  royaltiesRecipient: String!
+  paymentDenom: String!
+  royalties: BigInt!
+  referralFee: BigInt
+  protocolFee: BigInt!
+  totalPrice: BigInt!
+  sender: String! @index
+  timestamp: Date!
+}
