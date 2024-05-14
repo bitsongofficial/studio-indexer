@@ -12,7 +12,7 @@ export async function getNftMetadata(uri: string): Promise<NftMetadata | undefin
   logger.info(`Fetching NFT metadata from ${uri}`);
 
   try {
-    let uriFormatted = uri.replace("ipfs://", "https://yellow-hilarious-jay-665.mypinata.cloud/ipfs/");
+    let uriFormatted = uri.replace("ipfs://", "https://media-api.bitsong.studio/ipfs/");
     const data = await fetch(uriFormatted);
 
     return await data.json() as NftMetadata;
