@@ -59,7 +59,7 @@ export function getCurveActionsAttributes(event: CosmosEvent): CurveActionsAttri
 
   const tokenIds = event.event.attributes.find(
     (attribute) => attribute.key === "token_ids"
-  )?.value.split(",");
+  )?.value.toString().split(",");
 
   const price = event.event.attributes.find(
     (attribute) => attribute.key === "price"
@@ -78,15 +78,15 @@ export function getCurveActionsAttributes(event: CosmosEvent): CurveActionsAttri
   );
 
   return {
-    contractAddress,
-    referral: referral?.value,
-    referralAmount: referralAmount?.value,
-    royalties: royalties?.value,
-    royaltiesRecipient: royaltiesRecipient?.value,
-    protocolFee: protocolFee?.value,
+    contractAddress: contractAddress.toString(),
+    referral: referral?.value.toString(),
+    referralAmount: referralAmount?.value.toString(),
+    royalties: royalties?.value.toString(),
+    royaltiesRecipient: royaltiesRecipient?.value.toString(),
+    protocolFee: protocolFee?.value.toString(),
     tokenIds,
-    price: price?.value,
-    denom: denom?.value,
-    sender: recipient?.value || burner?.value,
+    price: price?.value.toString(),
+    denom: denom?.value.toString(),
+    sender: recipient?.value.toString() || burner?.value.toString(),
   }
 }

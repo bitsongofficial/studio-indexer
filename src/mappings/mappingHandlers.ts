@@ -33,6 +33,11 @@ function convertStartTimeToDate(startTime: string): Date {
 export async function handleEvent(event: CosmosEvent): Promise<void> {
   logger.info(`Indexing tx ${event.tx.hash} - ${event.block.block.header.height}`)
 
+  if (!event.msg) {
+    logger.error(`Event ${event.tx.hash} has no messages`);
+    return
+  }
+
   const data = event.msg.msg.decodedMsg as MsgExecuteContract<CreateCurve>;
   const marketplaceAddress = event.event.attributes[0].value;
   const contractAddress = event.event.attributes[2].value;
@@ -46,7 +51,7 @@ export async function handleEvent(event: CosmosEvent): Promise<void> {
   //logger.info(`Data ${JSON.stringify(data)}`)
 
   const nftRecord = Nft.create({
-    id: contractAddress,
+    id: contractAddress.toString(),
     blockHeight: BigInt(event.block.block.header.height),
     txHash: event.tx.hash,
     symbol: data.msg.create_curve.symbol,
@@ -61,10 +66,10 @@ export async function handleEvent(event: CosmosEvent): Promise<void> {
     referralFeeBps: BigInt(data.msg.create_curve.referral_fee_bps),
     startTime: convertStartTimeToDate(data.msg.create_curve.start_time),
     saleType: "curve",
-    marketplaceAddress,
+    marketplaceAddress: marketplaceAddress.toString(),
     ratio: BigInt(data.msg.create_curve.ratio),
     sender: data.sender,
-    timestamp: event.block.block.header.time,
+    timestamp: new Date(event.block.block.header.time.getTime()),
   });
 
   await nftRecord.save();
@@ -78,7 +83,9 @@ export async function handleMintBS721CurveNFT(event: CosmosEvent): Promise<void>
 
   const nft = await Nft.getByFields([
     ["marketplaceAddress", "=", contractAddress],
-  ])
+  ], {
+    limit: 100
+  })
 
   if (nft.length === 0) {
     logger.error(`NFT with marketplaceAddress ${contractAddress} not found`);
@@ -111,7 +118,7 @@ export async function handleMintBS721CurveNFT(event: CosmosEvent): Promise<void>
       protocolFee: protocolFeePerToken,
       totalPrice: pricePerToken,
       sender: sender ? sender : "",
-      timestamp: event.block.block.header.time,
+      timestamp: new Date(event.block.block.header.time.getTime()),
     });
 
     await nftActivityRecord.save();
@@ -145,7 +152,7 @@ export async function handleMintBS721CurveNFT(event: CosmosEvent): Promise<void>
       animationUrl: metadata ? metadata.animation_url : undefined,
       uri: token_uri,
       owner: sender ? sender : "",
-      timestamp: event.block.block.header.time,
+      timestamp: new Date(event.block.block.header.time.getTime()),
     });
 
     await nftTokenRecord.save();
@@ -158,7 +165,9 @@ export async function handleBurnBS721CurveNFT(event: CosmosEvent): Promise<void>
 
   const nft = await Nft.getByFields([
     ["marketplaceAddress", "=", contractAddress],
-  ])
+  ], {
+    limit: 100
+  })
 
   if (nft.length === 0) {
     logger.error(`NFT with marketplaceAddress ${contractAddress} not found`);
@@ -191,7 +200,7 @@ export async function handleBurnBS721CurveNFT(event: CosmosEvent): Promise<void>
       protocolFee: protocolFeePerToken,
       totalPrice: pricePerToken,
       sender: sender ? sender : "",
-      timestamp: event.block.block.header.time,
+      timestamp: new Date(event.block.block.header.time.getTime()),
     });
     await nftActivityRecord.save();
     logger.info(`Saved NFT Activity ${event.tx.hash}`);
@@ -222,9 +231,11 @@ export async function handleTransferNFT(event: CosmosEvent): Promise<void> {
   }
 
   const nfts = await NftToken.getByFields([
-    ["nftId", "=", contractAddress],
-    ["tokenId", "=", token_id.value],
-  ])
+    ["nftId", "=", contractAddress.toString()],
+    ["tokenId", "=", token_id.value.toString()],
+  ], {
+    limit: 100
+  })
 
   if (nfts.length === 0) {
     logger.error(`NFT not found`);
@@ -233,7 +244,7 @@ export async function handleTransferNFT(event: CosmosEvent): Promise<void> {
 
   const nft = nfts[0];
 
-  nft.owner = recipient.value;
+  nft.owner = recipient.value.toString();
 
   await nft.save();
   logger.info(`New owner for NFT ${nft.id} - ${nft.tokenId} is ${nft.owner}`);
@@ -260,9 +271,11 @@ export async function handleSendNFT(event: CosmosEvent): Promise<void> {
   }
 
   const nfts = await NftToken.getByFields([
-    ["nftId", "=", contractAddress],
-    ["tokenId", "=", token_id.value],
-  ])
+    ["nftId", "=", contractAddress.toString()],
+    ["tokenId", "=", token_id.value.toString()],
+  ], {
+    limit: 100
+  })
 
   if (nfts.length === 0) {
     logger.error(`NFT not found`);
@@ -271,7 +284,7 @@ export async function handleSendNFT(event: CosmosEvent): Promise<void> {
 
   const nft = nfts[0];
 
-  nft.owner = contract.value;
+  nft.owner = contract.value.toString();
 
   await nft.save();
   logger.info(`New owner for NFT ${nft.id} - ${nft.tokenId} is ${nft.owner}`);
