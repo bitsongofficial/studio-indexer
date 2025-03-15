@@ -39,8 +39,10 @@ export async function handleEvent(event: CosmosEvent): Promise<void> {
   }
 
   const data = event.msg.msg.decodedMsg as MsgExecuteContract<CreateCurve>;
-  const marketplaceAddress = event.event.attributes[0].value;
-  const contractAddress = event.event.attributes[2].value;
+  // const marketplaceAddress = event.event.attributes[0].value;
+  // const contractAddress = event.event.attributes[2].value;
+  const marketplaceAddress = event.tx.tx.events[16].attributes[0].value
+  const contractAddress = event.tx.tx.events[17].attributes[0].value
 
   let metadata;
 
